@@ -31,8 +31,6 @@ void tftPrintTest();
 void mediabuttons(); 
 
 void setup() {
-  // initialize digital pin PB1 as an output.
-  pinMode(PB1, OUTPUT);
     Serial.begin(BAUDRATE);
   Serial.print(F("Hello! ST77xx TFT Test"));
 
@@ -98,11 +96,6 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  // digitalWrite(PB1, HIGH);   // turn the LED on (HIGH is the voltage level)
-  // delay(100);                       // wait for a second
-  // digitalWrite(PB1, LOW);    // turn the LED off by making the voltage LOW
-  // delay(100);  
-  
  tft.invertDisplay(true);
  delay(500);
  tft.invertDisplay(false);
