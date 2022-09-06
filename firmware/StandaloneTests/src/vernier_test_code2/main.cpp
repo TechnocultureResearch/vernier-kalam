@@ -1,14 +1,15 @@
 #include<Arduino.h>
 
+#define BAUDRATE 115200
+#define  CLOCK_PIN 2
+#define  DATA_PIN  3
 int bit_array[25];        // For storing the data bit. bit_array[0] = data bit 1 (LSB), bit_array[23] = data bit 24 (MSB).
 unsigned long time_now;   // For storing the time when the clock signal is changed from HIGH to LOW (falling edge trigger of data output).
  
-int CLOCK_PIN = 2;
-int DATA_PIN = 3;
-
 void decode(); 
+
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(BAUDRATE);
   pinMode(CLOCK_PIN, INPUT);
   pinMode(DATA_PIN, INPUT);
 }
@@ -58,5 +59,5 @@ void decode() {
      Serial.print(result,2);                   // Print result with 2 decimals
      Serial.println(" mm");  
   }
-  delay(1000);
+  delay(500);
 }

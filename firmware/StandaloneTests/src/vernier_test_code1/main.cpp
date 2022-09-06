@@ -13,8 +13,8 @@
 #define DISPLAY_WIDTH 240
 #define DISPLAY_HEIGHT 135
 
-#define VERNIER_DATA_PIN PA11
-#define VERNIER_CLOCK_PIN PA12
+#define DATA_PIN PA11
+#define CLOCK_PIN PA12
 
 
 // Initialize Adafruit ST7789 TFT library
@@ -22,41 +22,23 @@ Adafruit_ST7789 vernier_oled = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 float p = 3.1415926;
 
-int i;
+int bit_array[25];        // For storing the data bit. bit_array[0] = data bit 1 (LSB), bit_array[23] = data bit 24 (MSB).
+unsigned long time_now;   // For storing the time when the clock signal is changed from HIGH to LOW (falling edge trigger of data output).
+ 
 
-int sign;
-
-long value;
-
-float result;
-
-unsigned long tempmicros;
-
-float reading=0;
-
-
-void oledPrint();
-float decode();
+void decode();
 
 void setup() {
   Serial.begin(BAUDRATE);
-   pinMode(VERNIER_CLOCK_PIN, INPUT);
-   pinMode(VERNIER_DATA_PIN, INPUT);
+  pinMode(CLOCK_PIN, INPUT);
+  pinMode(DATA_PIN, INPUT);
   Serial.print(F("Hello! ST77xx TFT Test"));
 
   // if the display has CS pin try with SPI_MODE0
   vernier_oled.init(DISPLAY_HEIGHT, DISPLAY_WIDTH, SPI_MODE0);    // Init ST7789 display 240x240 pixel
-
   // if the screen is flipped, remove this command
   vernier_oled.setRotation(3);
-
-  Serial.println(F("Initialized"));
-// vernier_oled print function!
-//   oledPrint();
-//   delay(4000);
-//  vernier_oled.fillScreen(ST77XX_WHITE);
- 
-vernier_oled.fillScreen(ST77XX_WHITE);
+  vernier_oled.fillScreen(ST77XX_WHITE);
 
   Serial.println("done");
   delay(100);
@@ -65,56 +47,66 @@ vernier_oled.fillScreen(ST77XX_WHITE);
 // the loop function runs over and over again forever
 void loop() {
  
-  //   float vernier_reading = decode();
-    oledPrint();
+   while (digitalRead(CLOCK_PIN) == LOW) {}  // If clock is LOW wait until it turns to HIGH
+  time_now = micros();
+  while (digitalRead(CLOCK_PIN) == HIGH) {} // Wait for the end of the HIGH pulse
+  if ((micros() - time_now) > 500)
+   {        // If the HIGH pulse was longer than 500 micros we are at the start of a new bit sequence
+    decode(); //decode the bit sequence
+   }
                    // wait for a second
 }
 
-void oledPrint() {
-  vernier_oled.setTextWrap(false);
+void decode()
+  {
+    int sign = 1;
+    int i = 0;
+    float value = 0.0;
+    float result = 0.0;
   
-  vernier_oled.setCursor(0, 30);
-  vernier_oled.setTextColor(ST77XX_BLUE);
-  vernier_oled.setTextSize(3);
-  vernier_oled.print(decode());
- delay(1500);
- 
-}
-
-float decode() {
-
-  sign=1;
-
-  value=0;
-
-
-  for (i=0;i<23;i++) {
-
-    while (digitalRead(VERNIER_CLOCK_PIN)==HIGH) { } //wait until clock returns to HIGH- the first bit is not needed
-
-    while (digitalRead(VERNIER_CLOCK_PIN)==LOW) {} //wait until clock returns to LOW
-
-    if (digitalRead(VERNIER_DATA_PIN)==LOW) {
-
-      if (i<20) {
-
-        value|= 1<<i;
-
-      }
-
-      if (i==20) {
-
-        sign=-1;
-
-      }
-
+    bit_array[i] = digitalRead(DATA_PIN);       // Store the 1st bit (start bit) which is always 1.
+    while (digitalRead(CLOCK_PIN) == HIGH) {};
+  
+    for (i = 1; i <= 24; i++)
+     {
+      while (digitalRead(CLOCK_PIN) == LOW) { } // Wait until clock returns to HIGH
+      bit_array[i] = digitalRead(DATA_PIN);  
+      while (digitalRead(CLOCK_PIN) == HIGH) {} // Wait until clock returns to LOW
+     }
+  
+    // for (i = 0; i <= 24; i++) {                 // Show the content of the bit array. This is for verification only.
+    //   Serial.print(bit_array[i]);
+    //   Serial.print(" ");
+    // }
+   //   Serial.println();
+  
+    for (i = 1; i <= 20; i++) {                 // Turning the value in the bit array from binary to decimal.
+        value = value + (pow(2, i-1) * bit_array[i]);
     }
-
-  }
-
-  result=(value*sign)/100.00;    
-
- // Serial.println(result,2); //print result with 2 decimals
-return result;
-
-}     
+  
+    if (bit_array[21] == 1) sign = -1;          // Bit 21 is the sign bit. 0 -> +, 1 => -
+  
+    if (bit_array[24] == 1) 
+    {                   // Bit 24 tells the measuring unit (1 -> in, 0 -> mm)
+      result = (value*sign) / 2000.00;
+      Serial.print(result,3);                   // Print result with 3 decimals
+      Serial.println(" in");
+      vernier_oled.setTextWrap(false);
+      vernier_oled.setCursor(0, 30);
+      vernier_oled.setTextColor(ST77XX_BLUE);
+      vernier_oled.setTextSize(3);
+      vernier_oled.print(result);
+    } 
+    else 
+      {
+        result = (value*sign) / 100.00;  
+        Serial.print(result,2);                   // Print result with 2 decimals
+        Serial.println(" mm"); 
+        vernier_oled.setTextWrap(false);
+        vernier_oled.setCursor(0, 30);
+        vernier_oled.setTextColor(ST77XX_BLUE);
+        vernier_oled.setTextSize(3);
+        vernier_oled.print(result); 
+      }
+    delay(500);
+}
