@@ -13,14 +13,12 @@
 #define DISPLAY_WIDTH 240
 #define DISPLAY_HEIGHT 135
 
-#define DATA_PIN PA11
-#define CLOCK_PIN PA12
+#define DATA_PIN PB6
+#define CLOCK_PIN PB7
 
 
 // Initialize Adafruit ST7789 TFT library
 Adafruit_ST7789 vernier_oled = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
-
-float p = 3.1415926;
 
 int bit_array[25];        // For storing the data bit. bit_array[0] = data bit 1 (LSB), bit_array[23] = data bit 24 (MSB).
 unsigned long time_now;   // For storing the time when the clock signal is changed from HIGH to LOW (falling edge trigger of data output).
@@ -32,7 +30,7 @@ void setup() {
   Serial.begin(BAUDRATE);
   pinMode(CLOCK_PIN, INPUT);
   pinMode(DATA_PIN, INPUT);
-  Serial.print(F("Hello! ST77xx TFT Test"));
+//  Serial.print(F("Hello! ST77xx TFT Test"));
 
   // if the display has CS pin try with SPI_MODE0
   vernier_oled.init(DISPLAY_HEIGHT, DISPLAY_WIDTH, SPI_MODE0);    // Init ST7789 display 240x240 pixel
@@ -89,24 +87,30 @@ void decode()
     if (bit_array[24] == 1) 
     {                   // Bit 24 tells the measuring unit (1 -> in, 0 -> mm)
       result = (value*sign) / 2000.00;
-      Serial.print(result,3);                   // Print result with 3 decimals
-      Serial.println(" in");
-      vernier_oled.setTextWrap(false);
-      vernier_oled.setCursor(0, 30);
+    //  Serial.print(result,3);                   // Print result with 3 decimals
+    //  Serial.println(" in");
+      vernier_oled.fillScreen(ST77XX_WHITE);
+      vernier_oled.setTextWrap(true);
+      vernier_oled.setCursor(10, 50);
       vernier_oled.setTextColor(ST77XX_BLUE);
+      vernier_oled.setTextSize(4);
+      vernier_oled.print(result,3);
       vernier_oled.setTextSize(3);
-      vernier_oled.print(result);
+      vernier_oled.print("in");
     } 
     else 
       {
         result = (value*sign) / 100.00;  
-        Serial.print(result,2);                   // Print result with 2 decimals
-        Serial.println(" mm"); 
-        vernier_oled.setTextWrap(false);
-        vernier_oled.setCursor(0, 30);
+     //   Serial.print(result,2);                   // Print result with 2 decimals
+     //  Serial.println(" mm"); 
+        vernier_oled.fillScreen(ST77XX_WHITE);
+        vernier_oled.setTextWrap(true);
+        vernier_oled.setCursor(10, 50);
         vernier_oled.setTextColor(ST77XX_BLUE);
-        vernier_oled.setTextSize(3);
-        vernier_oled.print(result); 
+        vernier_oled.setTextSize(6);
+        vernier_oled.print(result,2); 
+        vernier_oled.setTextSize(4);
+        vernier_oled.print("mm");
       }
-    delay(500);
+    delay(5);
 }
