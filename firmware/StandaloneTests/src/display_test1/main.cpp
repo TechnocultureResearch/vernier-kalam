@@ -250,12 +250,12 @@ void tftPrintTest() {
   tft.print(1234.567);
   delay(1500);
   tft.setCursor(0, 0);
-  tft.fillScreen(ST77XX_BLACK);
-  tft.setTextColor(ST77XX_WHITE);
+  tft.fillScreen(ST77XX_GREEN);
+  tft.setTextColor(ST77XX_BLUE);
   tft.setTextSize(0);
   tft.println("Hello World!");
   tft.setTextSize(1);
-  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextColor(ST77XX_BLACK);
   tft.print(p, 6);
   tft.println(" Want pi?");
   tft.println(" ");
