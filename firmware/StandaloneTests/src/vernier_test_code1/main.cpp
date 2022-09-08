@@ -36,7 +36,7 @@ void setup() {
   vernier_oled.init(DISPLAY_HEIGHT, DISPLAY_WIDTH, SPI_MODE0);    // Init ST7789 display 240x240 pixel
   // if the screen is flipped, remove this command
   vernier_oled.setRotation(3);
-  vernier_oled.fillScreen(ST77XX_WHITE);
+  vernier_oled.fillScreen(ST77XX_BLACK);
 
   Serial.println("done");
   delay(100);
@@ -89,10 +89,10 @@ void decode()
       result = (value*sign) / 2000.00;
     //  Serial.print(result,3);                   // Print result with 3 decimals
     //  Serial.println(" in");
-      vernier_oled.fillScreen(ST77XX_WHITE);
+      vernier_oled.fillScreen(ST77XX_BLACK);
       vernier_oled.setTextWrap(true);
       vernier_oled.setCursor(10, 50);
-      vernier_oled.setTextColor(ST77XX_BLUE);
+      vernier_oled.setTextColor(ST77XX_WHITE);
       vernier_oled.setTextSize(4);
       vernier_oled.print(result,3);
       vernier_oled.setTextSize(3);
@@ -103,13 +103,13 @@ void decode()
         result = (value*sign) / 100.00;  
      //   Serial.print(result,2);                   // Print result with 2 decimals
      //  Serial.println(" mm"); 
-        vernier_oled.fillScreen(ST77XX_WHITE);
+        vernier_oled.fillScreen(ST77XX_BLACK);
         vernier_oled.setTextWrap(true);
         vernier_oled.setCursor(10, 50);
-        vernier_oled.setTextColor(ST77XX_BLUE);
-        vernier_oled.setTextSize(6);
-        vernier_oled.print(result,2); 
+        vernier_oled.setTextColor(ST77XX_WHITE);
         vernier_oled.setTextSize(4);
+        vernier_oled.print(result,2); 
+        vernier_oled.setTextSize(3);
         vernier_oled.print("mm");
       }
     delay(5);
